@@ -1,8 +1,22 @@
 import sys
+from validation import validate_and_parse
 
 def main():
+    print(
+        "Podaj dane w następującym formacie:\n"
+        "n\n"
+        "x0 x1 ... xn\n"
+        "y0 y1 ... yn\n"
+        "t1 t2 ... (opcjonalnie kolejne linie z t)\n\n"
+        "Po zakończeniu wpisywania danych naciśnij:\n"
+        " - Ctrl+D  (Linux/Mac)\n"
+        " - Ctrl+Z+Enter  (Windows)\n"
+    )
     data = sys.stdin.read().splitlines()
-    if not data:
+    try:
+        n, x, y, t_values = validate_and_parse(data)
+    except ValueError as e:
+        print("Błąd:", e)
         return
     
     n = int(data[0].strip())
