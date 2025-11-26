@@ -1,7 +1,7 @@
 \documentclass{article}
-\usepackage[utf8]{inputenc}   
-\usepackage[T1]{fontenc}      
-\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}       
+\usepackage[T1]{fontenc}          
+\usepackage[polish]{babel}         
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{listings}
@@ -9,9 +9,12 @@
 \usepackage{geometry}
 \geometry{a4paper, margin=1in}
 
+% Definicje kolorów dla listingu
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
+
+% Ustawienia listingu
 \lstset{
     basicstyle=\ttfamily\small,
     commentstyle=\color{codegreen},
@@ -27,11 +30,29 @@
     showspaces=false,
     showstringspaces=false,
     showtabs=false,
-    tabsize=2
+    tabsize=2,
+    literate={ą}{{\k{a}}}1
+             {ć}{{\'c}}1
+             {ę}{{\k{e}}}1
+             {ł}{{\l}}1
+             {ń}{{\'n}}1
+             {ó}{{\'o}}1
+             {ś}{{\'s}}1
+             {ź}{{\'z}}1
+             {ż}{{\.z}}1
+             {Ą}{{\k{A}}}1
+             {Ć}{{\'C}}1
+             {Ę}{{\k{E}}}1
+             {Ł}{{\L}}1
+             {Ń}{{\'N}}1
+             {Ó}{{\'O}}1
+             {Ś}{{\'S}}1
+             {Ź}{{\'Z}}1
+             {Ż}{{\.Z}}1
 }
 
-\title{Algorytmy Numeryczne 1.1 - Interpolacja Newtona}
-\author{Przemyslaw Sawoniuk, Jeremiasz Olech}
+\title{Algorytmy numeryczne 1.1 - Interpolacja Newtona}
+\author{Przemysław Sawoniuk, Jeremiasz Olech}
 \date{26.11.2025}
 
 \begin{document}
@@ -39,33 +60,33 @@
 \maketitle
 
 \section{Podstawy teoretyczne}
-Dla $n+1$ punktow $(x_0, y_0), (x_1, y_1), \dots, (x_n, y_n)$, gdzie $x_i$ sa rozne, wielomian interpolacyjny w \textbf{postaci Newtona} ma postac:
+Dla $n+1$ punktów $(x_0, y_0), (x_1, y_1), \dots, (x_n, y_n)$, gdzie $x_i$ są różne, wielomian interpolacyjny w \textbf{postaci Newtona} ma postać:
 \[
 P_n(x) = a_0 + a_1(x - x_0) + a_2(x - x_0)(x - x_1) + \dots + a_n(x - x_0)\cdots(x - x_{n-1}),
 \]
 gdzie:
 \begin{itemize}
-    \item $a_k = f[x_0, x_1, \dots, x_k]$ to \textbf{ilorazy roznicowe} rzedu $k$,
-    \item Ilorazy obliczane sa rekurencyjnie:
+\item $a_k = f[x_0, x_1, \dots, x_k]$ to \textbf{ilorazy różnicowe} rzędu $k$,
+    \item Ilorazy obliczane są rekurencyjnie:
     \[
     f[x_i, \dots, x_j] = \frac{f[x_{i+1}, \dots, x_j] - f[x_i, \dots, x_{j-1}]}{x_j - x_i}.
     \]
 \end{itemize}
 
 \section{Kod w Pythonie}
-\subsection{Pelny kod}
-\begin{lstlisting}[language=Python, caption=Interpolacja Newtona z obsluga bledow]
+\subsection{Pełny kod}
+\begin{lstlisting}[language=Python, caption=Interpolacja Newtona z obsługą błędów]
 import sys
 from validation import validate_and_parse
 
 def main():
     print(
-        "Podaj dane w nastepujacym formacie:\n"
+        "Podaj dane w następującym formacie:\n"
         "n\n"
         "x0 x1 ... xn\n"
         "y0 y1 ... yn\n"
         "t1 t2 ... (opcjonalnie kolejne linie z t)\n\n"
-        "Po zakonczeniu wpisywania danych nacisnij:\n"
+        "Po zakończeniu wpisywania danych naciśnij:\n"
         " - Ctrl+D  (Linux/Mac)\n"
         " - Ctrl+Z+Enter  (Windows)\n"
     )
@@ -73,7 +94,7 @@ def main():
     try:
         n, x, y, t_values = validate_and_parse(data)
     except ValueError as e:
-        print("Blad:", e)
+        print("Błąd:", e)
         return
     
     m = n + 1
@@ -97,44 +118,44 @@ if __name__ == "__main__":
     main()
 \end{lstlisting}
 
-\subsection{Modul walidacji}
+\subsection{Moduł walidacji}
 \begin{lstlisting}[language=Python, caption=validation.py]
 def validate_and_parse(data):
     if not data:
-        raise ValueError("Brak danych wejsciowych.")
+        raise ValueError("Brak danych wejściowych.")
 
     # n
     try:
         n = int(data[0].strip())
     except ValueError:
-        raise ValueError("Pierwsza linia musi zawierac liczbe calkowita n.")
+        raise ValueError("Pierwsza linia musi zawierać liczbę całkowitą n.")
 
     if n < 1:
-        raise ValueError("n musi byc >= 1.")
+        raise ValueError("n musi być >= 1.")
 
     if len(data) < 3:
-        raise ValueError("Zbyt malo linii danych - oczekiwane: n, x, y.")
+        raise ValueError("Zbyt mało linii danych - oczekiwane: n, x, y.")
 
     # x
     try:
         x = list(map(float, data[1].split()))
     except ValueError:
-        raise ValueError("Linia 2 musi zawierac wartosci liczbowe x.")
+        raise ValueError("Linia 2 musi zawierać wartości liczbowe x.")
 
     if len(x) != n + 1:
-        raise ValueError(f"Dla n={n} nalezy podac dokladnie {n+1} wartosci x (podano {len(x)}).")
+        raise ValueError(f"Dla n={n} należy podać dokładnie {n+1} wartości x (podano {len(x)}).")
 
     if len(set(x)) != len(x):
-        raise ValueError("Wartosci x musza byc unikalne.")
+        raise ValueError("Wartości x muszą być unikalne.")
 
     # y
     try:
         y = list(map(float, data[2].split()))
     except ValueError:
-        raise ValueError("Linia 3 musi zawierac wartosci liczbowe y.")
+        raise ValueError("Linia 3 musi zawierać wartości liczbowe y.")
 
     if len(y) != n + 1:
-        raise ValueError(f"Dla n={n} nalezy podac dokladnie {n+1} wartosci y (podano {len(y)}).")
+        raise ValueError(f"Dla n={n} należy podać dokładnie {n+1} wartości y (podano {len(y)}).")
 
     # t
     t_values = []
@@ -142,61 +163,53 @@ def validate_and_parse(data):
         try:
             t_values.extend(map(float, line.split()))
         except ValueError:
-            raise ValueError("W liniach z t musza znajdowac sie liczby.")
+            raise ValueError("W liniach z t muszą znajdować się liczby.")
 
     if not t_values:
-        raise ValueError("Brak punktow t do obliczenia interpolacji.")
+        raise ValueError("Brak punktów t do obliczenia interpolacji.")
 
     return n, x, y, t_values
 \end{lstlisting}
 
-\section{Obsluga bledow}
+\section{Obsługa błędów}
 \subsection{Kluczowe mechanizmy walidacji}
 \begin{enumerate}
-    \item \textbf{Sprawdzenie podstawowych warunkow:}
-    \begin{itemize}
-        \item Dane wejsciowe nie moga byc puste
-        \item Liczba $n$ musi byc calkowita i $\geq 1$
-        \item Musza byc podane wszystkie linie: $n$, $x$, $y$
-    \end{itemize}
+    \item \textbf{Sprawdzenie podstawowych warunków:}
+    \item Dane wejściowe nie mogą być puste
+        \item Liczba $n$ musi być całkowita i $\geq 1$
+        \item Muszą być podane wszystkie linie: $n$, $x$, $y$
     
-    \item \textbf{Walidacja wezlow $x$:}
-    \begin{itemize}
-        \item Wartosci musza byc liczbowe
-        \item Liczba wezlow musi wynosic dokladnie $n+1$
-        \item Wezly musza byc unikalne (brak powtorzen)
-    \end{itemize}
+    \item \textbf{Walidacja węzłów $x$:}
+    \item Wartości muszą być liczbowe
+        \item Liczba węzłów musi wynosić dokładnie $n+1$
+        \item Węzły muszą być unikalne (brak powtórzeń)
     
-    \item \textbf{Walidacja wartosci $y$:}
-    \begin{itemize}
-        \item Wartosci musza byc liczbowe
-        \item Liczba wartosci musi wynosic dokladnie $n+1$
-    \end{itemize}
+    \item \textbf{Walidacja wartości $y$:}
+    \item Wartości muszą być liczbowe
+        \item Liczba wartości musi wynosić dokładnie $n+1$
     
-    \item \textbf{Walidacja punktow $t$:}
-    \begin{itemize}
-        \item Wartosci musza byc liczbowe
-        \item Musi istniec co najmniej jeden punkt $t$
-    \end{itemize}
+    \item \textbf{Walidacja punktów $t$:}
+    \item Wartości muszą być liczbowe
+        \item Musi istnieć co najmniej jeden punkt $t$
 \end{enumerate}
 
-\subsection{Przyklady bledow i komunikaty}
+\subsection{Przykłady błędów i komunikaty}
 \begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
-Blad: Brak danych wejsciowych.
-Blad: Pierwsza linia musi zawierac liczbe calkowita n.
-Blad: n musi byc >= 1.
-Blad: Zbyt malo linii danych - oczekiwane: n, x, y.
-Blad: Linia 2 musi zawierac wartosci liczbowe x.
-Blad: Dla n=2 nalezy podac dokladnie 3 wartosci x (podano 2).
-Blad: Wartosci x musza byc unikalne.
-Blad: Linia 3 musi zawierac wartosci liczbowe y.
-Blad: Dla n=2 nalezy podac dokladnie 3 wartosci y (podano 4).
-Blad: W liniach z t musza znajdowac sie liczby.
-Blad: Brak punktow t do obliczenia interpolacji.
+Błąd: Brak danych wejściowych.
+Błąd: Pierwsza linia musi zawierać liczbę całkowitą n.
+Błąd: n musi być >= 1.
+Błąd: Zbyt mało linii danych - oczekiwane: n, x, y.
+Błąd: Linia 2 musi zawierać wartości liczbowe x.
+Błąd: Dla n=2 należy podać dokładnie 3 wartości x (podano 2).
+Błąd: Wartości x muszą być unikalne.
+Błąd: Linia 3 musi zawierać wartości liczbowe y.
+Błąd: Dla n=2 należy podać dokładnie 3 wartości y (podano 4).
+Błąd: W liniach z t muszą znajdować się liczby.
+Błąd: Brak punktów t do obliczenia interpolacji.
 \end{lstlisting}
 
-\section{Przyklad dzialania}
-\subsection{Dane wejsciowe (poprawne)}
+\section{Przykład działania}
+\subsection{Dane wejściowe (poprawne)}
 \begin{lstlisting}
 2
 0.0 1.0 2.0
@@ -210,14 +223,14 @@ Blad: Brak punktow t do obliczenia interpolacji.
 3.25
 \end{lstlisting}
 
-\subsection{Bledne dane wejsciowe i komunikaty}
+\subsection{Błędne dane wejściowe i komunikaty}
 \begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
 2
 0.0 1.0 0.0
 1.0 2.0 5.0
 0.5 1.5
 
-Blad: Wartosci x musza byc unikalne.
+Błąd: Wartości x muszą być unikalne.
 \end{lstlisting}
 
 \begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
@@ -226,7 +239,7 @@ Blad: Wartosci x musza byc unikalne.
 1.0 2.0
 0.5 1.5
 
-Blad: Dla n=2 nalezy podac dokladnie 3 wartosci y (podano 2).
+Błąd: Dla n=2 należy podać dokładnie 3 wartości y (podano 2).
 \end{lstlisting}
 
 \begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
@@ -234,15 +247,15 @@ Blad: Dla n=2 nalezy podac dokladnie 3 wartosci y (podano 2).
 0.0 1.0 2.0
 1.0 2.0 5.0
 
-Blad: Brak punktow t do obliczenia interpolacji.
+Błąd: Brak punktów t do obliczenia interpolacji.
 \end{lstlisting}
 
 \section{Podsumowanie}
 \begin{itemize}
-    \item Program \textbf{sprawdza poprawnosc danych} przed przystapieniem do obliczen
-    \item \textbf{Precyzyjne komunikaty bledow} wskazuja, co jest nie tak
-    \item \textbf{Oddzielny modul walidacji} zapewnia czytelnosc kodu
-    \item Program \textbf{nie przerywa dzialania} w przypadku bledow - wyswietla komunikat i konczy prace
+\item Program \textbf{sprawdza poprawność danych} przed przystąpieniem do obliczeń
+    \item \textbf{Precyzyjne komunikaty błędów} wskazują, co jest nie tak
+    \item \textbf{Oddzielny moduł walidacji} zapewnia czytelność kodu
+    \item Program \textbf{nie przerywa działania} w przypadku błędów — wyświetla komunikat i kończy pracę
 \end{itemize}
 
 \end{document}
