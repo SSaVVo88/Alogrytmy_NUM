@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc} % Wsparcie dla UTF-8
+\usepackage[T1]{fontenc}    % Kodowanie T1 dla polskich znaków
+\usepackage{polski}         % Pakiet do języka polskiego
+\usepackage{lmodern}        % Lepsza czcionka
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\lstset{
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\title{Interpolacja Newtona}
+\author{Student}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Podstawy teoretyczne}
+Dla $n+1$ punktów $(x_0, y_0), (x_1, y_1), \dots, (x_n, y_n)$, gdzie $x_i$ są różne, wielomian interpolacyjny w \textbf{postaci Newtona} ma postać:
+\[
+P_n(x) = a_0 + a_1(x - x_0) + a_2(x - x_0)(x - x_1) + \dots + a_n(x - x_0)\cdots(x - x_{n-1}),
+\]
+gdzie:
+- $a_k = f[x_0, x_1, \dots, x_k]$ to \textbf{ilorazy różnicowe} rzędu $k$,
+- Ilorazy obliczane są rekurencyjnie:
+  \[
+  f[x_i, \dots, x_j] = \frac{f[x_{i+1}, \dots, x_j] - f[x_i, \dots, x_{j-1}]}{x_j - x_i}.
+  \]
+
+\section{Kod w Pythonie}
+\subsection{Pełny kod}
+\begin{lstlisting}[language=Python, caption=Interpolacja Newtona]
+import sys
+
+def main():
+    data = sys.stdin.read().splitlines()
+    if not data:
+        return
+    
+    n = int(data[0].strip())
+    x = list(map(float, data[1].split()))
+    y = list(map(float, data[2].split()))
+    t_values = []
+    
+    for line in data[3:]:
+        t_values.extend(map(float, line.split()))
+    
+    m = n + 1
+    coeffs = y.copy()
+    
+    for i in range(1, m):
+        for j in range(m - 1, i - 1, -1):
+            coeffs[j] = (coeffs[j] - coeffs[j - 1]) / (x[j] - x[j - i])
+    
+    results = []
+    for t in t_values:
+        result = coeffs[-1]
+        for i in range(m - 2, -1, -1):
+            result = coeffs[i] + (t - x[i]) * result
+        results.append(result)
+    
+    for res in results:
+        print(res)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\subsection{Kluczowe fragmenty}
+\subsubsection*{Obliczanie ilorazów różnicowych}
+\begin{lstlisting}[language=Python]
+for i in range(1, m):
+    for j in range(m - 1, i - 1, -1):
+        coeffs[j] = (coeffs[j] - coeffs[j - 1]) / (x[j] - x[j - i])
+\end{lstlisting}
+\textbf{Dlaczego od tyłu?} Aby nie nadpisać danych używanych w kolejnych obliczeniach (np. $f[x_0, x_1]$ musi zostać zachowane do obliczenia $f[x_0, x_1, x_2]$).
+
+\subsubsection*{Schemat Hornera dla postaci Newtona}
+\begin{lstlisting}[language=Python]
+result = coeffs[-1]
+for i in range(m - 2, -1, -1):
+    result = coeffs[i] + (t - x[i]) * result
+\end{lstlisting}
+\textbf{Działanie:} 
+\[
+P(t) = a_0 + (t - x_0)\big(a_1 + (t - x_1)\big(\dots\big)\big)
+\]
+
+\section{Przykład działania}
+\subsection{Dane wejściowe}
+\begin{lstlisting}
+2
+0.0 1.0 2.0
+1.0 2.0 5.0
+0.5 1.5
+\end{lstlisting}
+
+\subsection{Wynik}
+\begin{lstlisting}
+1.25
+3.25
+\end{lstlisting}
+
+\textbf{Weryfikacja:}
+- Dla $t = 0.5$: $P(0.5) = 1.0 + 0.5 \cdot (1.0 - 0.5 \cdot 1.0) = 1.25$,
+- Dla $t = 1.5$: $P(1.5) = 1.0 + 1.5 \cdot (1.0 + 0.5 \cdot 1.0) = 3.25$.
+
+\end{document}
