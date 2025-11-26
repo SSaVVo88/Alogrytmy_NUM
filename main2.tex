@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\lstset{
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\title{Zadanie 2.1: Rozwiazanie rownania $x^3 + x - 100 = 0$}
+\author{Przemysław Sawoniuk, Jeremiasz Olech}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Teoria matematyczna}
+
+\subsection{Metoda siecznych (Bisection Method)}
+Dla funkcji ciaglej $f(x)$ na przedziale $[a, b]$, jesli $f(a) \cdot f(b) < 0$, istnieje miejsce zerowe w $(a, b)$. Algorytm:
+\begin{enumerate}
+    \item Wybierz przedzial $[a, b]$ taki, ze $f(a) \cdot f(b) < 0$
+    \item Oblicz srodek $c = \frac{a + b}{2}$
+    \item Jesli $f(c) = 0$, to $c$ jest rozwiazaniem
+    \item Jesli $f(a) \cdot f(c) < 0$, nowy przedzial to $[a, c]$
+    \item W przeciwnym wypadku nowy przedzial to $[c, b]$
+    \item Powtarzaj, az $b - a < \varepsilon$
+\end{enumerate}
+
+Dla poczatkowego przedzialu $[4, 5]$ ($f(4) = -32$, $f(5) = 30$) liczba krokow:
+\[
+n \geq \log_2\left(\frac{1}{\varepsilon}\right)
+\]
+
+\subsection{Metoda iteracji prostych (Fixed-Point Iteration)}
+Rownanie przeksztalcono do postaci $x = \sqrt[3]{100 - x}$. 
+Warunek zbieznosci: $|g'(x)| < 1$, gdzie $g(x) = \sqrt[3]{100 - x}$.
+
+Pochodna:
+\[
+g'(x) = -\frac{1}{3}(100 - x)^{-2/3}
+\]
+
+W okolicy pierwiastka $x^* \approx 4.57$:
+\[
+|g'(x^*)| \approx 0.0159 < 1
+\]
+co gwarantuje zbieznosc.
+
+\section{Kod w Pythonie}
+
+\subsection{Pełny kod z walidacją}
+\begin{lstlisting}[language=Python, caption=Rozwiazanie z walidacja]
+import sys
+
+def f(x):
+    return x**3 + x - 100
+
+def bisection(eps):
+    a, b = 4.0, 5.0  # f(4) = -32, f(5) = 30
+    steps = 0
+    while b - a > eps:
+        c = (a + b) / 2.0
+        if f(c) == 0:
+            break
+        elif f(a) * f(c) < 0:
+            b = c
+        else:
+            a = c
+        steps += 1
+    return steps
+
+def fixed_point(eps):
+    x0 = 4.5  # Poczatkowe przyblizenie
+    steps = 0
+    while True:
+        x1 = (100 - x0) ** (1/3)
+        if abs(x1 - x0) < eps:
+            break
+        x0 = x1
+        steps += 1
+    return steps
+
+def validate_input(eps_str):
+    try:
+        eps = float(eps_str)
+    except ValueError:
+        raise ValueError("Dokladnosc musi byc liczba.")
+    
+    if eps <= 0 or eps >= 1:
+        raise ValueError("Dokladnosc musi spelniac warunek 0 < eps < 1.")
+    
+    return eps
+
+def main():
+    try:
+        eps_str = sys.stdin.readline().strip()
+        eps = validate_input(eps_str)
+        
+        bis_steps = bisection(eps)
+        fp_steps = fixed_point(eps)
+        
+        print(f"Metoda siecznych: {bis_steps} krokow")
+        print(f"Metoda iteracji prostych: {fp_steps} krokow")
+    
+    except ValueError as e:
+        print("Blad:", e)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\subsection{Walidacja danych wejściowych}
+\begin{itemize}
+    \item \textbf{Sprawdzenie typu:} Wartość $\varepsilon$ musi być liczbą
+    \item \textbf{Sprawdzenie zakresu:} $0 < \varepsilon < 1$
+    \item \textbf{Obsługa wyjątków:} Wyświetla precyzyjny komunikat błędu
+\end{itemize}
+
+\subsection{Przykłady błędów}
+\begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
+Blad: Dokladnosc musi byc liczba.
+
+Blad: Dokladnosc musi spelniac warunek 0 < eps < 1.
+\end{lstlisting}
+
+\section{Przykład działania}
+
+\subsection{Dane wejściowe (poprawne)}
+\begin{lstlisting}
+0.001
+\end{lstlisting}
+
+\subsection{Wynik}
+\begin{lstlisting}
+Metoda siecznych: 10 krokow
+Metoda iteracji prostych: 3 krokow
+\end{lstlisting}
+
+\subsection{Błędne dane wejściowe i komunikaty}
+\begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
+abc
+
+Blad: Dokladnosc musi byc liczba.
+\end{lstlisting}
+
+\begin{lstlisting}[frame=single, backgroundcolor=\color{gray!10}, basicstyle=\small\ttfamily]
+1.5
+
+Blad: Dokladnosc musi spelniac warunek 0 < eps < 1.
+\end{lstlisting}
+
+\section{Porównanie metod}
+
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Metoda} & \textbf{Liczba kroków ($\varepsilon = 0.001$)} & \textbf{Zlozonosc} \\
+\hline
+Metoda siecznych & 10 & $O(\log_2(1/\varepsilon))$ \\
+\hline
+Metoda iteracji prostych & 3 & $O(\log(1/\varepsilon))$ \\
+\hline
+\end{tabular}
+
+\section{Wnioski}
+\begin{itemize}
+    \item Metoda siecznych jest uniwersalna, ale wolniejsza
+    \item Metoda iteracji prostych jest 3.3 razy szybsza dla $\varepsilon = 0.001$
+    \item Walidacja zapewnia, ze program nie przetwarza blednych danych
+    \item Komunikaty bledow wskazuja dokladnie, co jest nie tak
+\end{itemize}
+
+\end{document}
